@@ -5,6 +5,7 @@ import seaborn as sns
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
+import math
 
 root = Tk()
 root.title("Student Performance Analysis")
@@ -59,7 +60,8 @@ def calculate_stats():
     anova_results = {}
     for cat_col in df_mat.columns[:-5]:  # onhe letzten 4 spalten
         groups = [df_mat[df_mat[cat_col] == cat][selected_column] for cat in df_mat[cat_col].unique()]
-        f_stat, p_value = stats.kruskal(*groups)
+        f_stat, p_valu = stats.kruskal(*groups)
+        p_value = math.e**(-p_valu)
         anova_results[cat_col] = {'H-statistic': f_stat, 'p-value': p_value}
 
     anova_df = pd.DataFrame(anova_results).T
@@ -69,16 +71,16 @@ def calculate_stats():
     plt.figure(figsize=(10, 5))
     sns.barplot(x=anova_df.index, y=anova_df['p-value'], palette="coolwarm")
 
-    plt.axhline(y=0.05, color='red', linestyle='--', label="Kritische Stufe (0.05)")
+    plt.axhline(y=math.e**(-0.05), color='red', linestyle='--', label="Kritische Stufe (0.95)")
 
     for i, p in enumerate(anova_df['p-value']):
-        plt.text(i, p + 0.01, f"{p:.3f}", ha='center', fontsize=10, color='black')
+        plt.text(i, p + 0.01, f"{p:.2f}", ha='center', fontsize=10, color='black')
 
     plt.xticks(rotation=90)
     plt.ylim(0, max(anova_df['p-value']) + 0.05)
     plt.ylabel('p-value')
     plt.xlabel('Parametr')
-    plt.title(f'H-statistic: p-value ({selected_column})')
+    plt.title(f'H-statistic: exp(-p) ({selected_column})')
     plt.legend()
     plt.grid(axis='y', linestyle='--', alpha=0.6)
 
