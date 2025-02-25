@@ -32,7 +32,7 @@ def open_file():
         # select
         column_selector["state"] = "readonly"
         calculate_button["state"] = "normal"
-
+        kriteriumswerte["state"] = "normal"
 # statistic calculation
 def calculate_stats():
     if df_mat is None:
@@ -62,13 +62,18 @@ def calculate_stats():
         groups = [df_mat[df_mat[cat_col] == cat][selected_column] for cat in df_mat[cat_col].unique()]
         f_stat, p_valu = stats.kruskal(*groups)
         p_value = math.e**(-p_valu)
-        anova_results[cat_col] = {'H-statistic': f_stat, 'p-value': p_value}
+        if enabled.get() == 1: # analöse nur kriterienswerte
+            if p_value >= 0.95:
+                anova_results[cat_col] = {'H-statistic': f_stat, 'p-value': p_value}
+        else:
+            anova_results[cat_col] = {'H-statistic': f_stat, 'p-value': p_value}
+        
 
     anova_df = pd.DataFrame(anova_results).T
     print(anova_df.applymap(lambda x: f'{x:.8f}'))
 
-    # График
-    plt.figure(figsize=(10, 5))
+    # Grafik
+    plt.figure(figsize=(10, 8))
     sns.barplot(x=anova_df.index, y=anova_df['p-value'], palette="coolwarm")
 
     plt.axhline(y=math.e**(-0.05), color='red', linestyle='--', label="Kritische Stufe (0.95)")
@@ -86,6 +91,8 @@ def calculate_stats():
 
     plt.show()
 
+
+
 # öffnen taste
 open_button = ttk.Button(root, text="Datei öfnen", command=open_file)
 open_button.grid(column=0, row=1, sticky=NSEW, padx=10, pady=5)
@@ -98,5 +105,10 @@ column_selector.set("wählen eine Spalte aus")
 # kalkulation taste
 calculate_button = ttk.Button(root, text="Kalkulieren", command=calculate_stats, state="disabled")
 calculate_button.grid(column=0, row=3, sticky=NSEW, padx=10, pady=5)
+
+#  Checkbutton für nur kriterienswerte
+enabled = IntVar()
+kriteriumswerte1 = ttk.Checkbutton(text="Nur Kriteriumswerte", variable=enabled)
+kriteriumswerte1.grid(column=0, row=4, sticky=NSEW, padx=10, pady=5)
 
 root.mainloop()
