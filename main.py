@@ -19,3 +19,21 @@ df = pd.read_csv("student-mat.csv", sep=";")
 # Berechnung von Mittelwert, Median und Standardabweichung der Noten
 stats = df[["G3"]].agg(["mean", "median", "std"])
 print("Deskriptive Statistik der Noten:\n", stats)
+
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("student-mat.csv", sep=";")
+
+# Scatterplot zur Untersuchung der Korrelation zwischen Abwesenheiten und Noten
+sns.scatterplot(x=df["absences"], y=df["G3"])
+plt.xlabel("Anzahl der Abwesenheiten")
+plt.ylabel("Endnote")
+plt.title("Korrelation zwischen Abwesenheiten und Noten")
+plt.show()
+
+# Berechnung des Korrelationskoeffizienten
+correlation = df["absences"].corr(df["G3"])
+print("Korrelationskoeffizient zwischen Abwesenheiten und Endnote:", correlation)
