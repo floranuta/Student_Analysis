@@ -24,10 +24,9 @@ spalt = []
 pdf = FPDF()
 # Datei öfnen
 
-df0 = pd.read_csv("student-mat.csv", delimiter=";")
+
 def fehler_suche(df1):
-    #  Dateien einlesen mit korrektem Trennzeichen
-    df1 = pd.read_csv("student-mat.csv", delimiter=";")
+    
     
 
     # Entfernt zusätzliche Leerzeichen um Spaltennamen
@@ -241,46 +240,60 @@ def calculate_grup():
    
     
    
+   
+
+
+    # Berechnung der statistischen Werte
     mean_values = df_mat.groupby(gruppens)[selected_column].mean()
     median_values = df_mat.groupby(gruppens)[selected_column].median()
     stabw_values = df_mat.groupby(gruppens)[selected_column].std()
+
     print(mean_values)
     print(median_values)
     print(stabw_values)
-   
 
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-
-    # Grafik der Durchschnittswerte
-    sns.barplot(x=mean_values.index, y=mean_values.values, ax=axes[0], palette="Blues")
-    axes[0].set_title("Durchschnittswerte")
-    axes[0].set_ylabel("Mean")
-
-    # Grafik der Medianwerte
-    sns.barplot(x=median_values.index, y=median_values.values, ax=axes[1], palette="Greens")
-    axes[1].set_title("Medianwerte")
-    axes[1].set_ylabel("Median")
-
-    # Darstellung der Standardabweichung
-    sns.barplot(x=stabw_values.index, y=stabw_values.values, ax=axes[2], palette="Reds")
-    axes[2].set_title("Standardabweichung")
-    axes[2].set_ylabel("Std Deviation")
-
-    # grafikeinstellungen
-    for ax in axes:
-        ax.set_xlabel("Groupen")
-        ax.set_ylim(0, max(mean_values.max(), median_values.max(), stabw_values.max()) * 1.2)
-        ax.grid(axis='y', linestyle='--', alpha=0.6)
     
-    # bild für Gruppenstatistik  zeigen oder speichern
+
+    # Falls die Gruppen binär sind, werden Kreisdiagramme angezeigt
+    if len(mean_values.index) == 2:
+        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+        axes[0].pie(mean_values.values, labels=mean_values.index, autopct="%1.1f%%", colors=sns.color_palette("Blues", 2))
+        axes[0].set_title("Durchschnittswerte")
+        
+        axes[1].pie(median_values.values, labels=median_values.index, autopct="%1.1f%%", colors=sns.color_palette("Greens", 2))
+        axes[1].set_title("Medianwerte")
+        
+        axes[2].pie(stabw_values.dropna().values, labels=stabw_values.dropna().index, autopct="%1.1f%%", colors=sns.color_palette("Reds", 2))
+        axes[2].set_title("Standardabweichung")
+    else:
+        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+        sns.barplot(x=mean_values.index, y=mean_values.values, ax=axes[0], palette="Blues")
+        axes[0].set_title("Durchschnittswerte")
+        axes[0].set_ylabel("Mean")
+        
+        sns.barplot(x=median_values.index, y=median_values.values, ax=axes[1], palette="Greens")
+        axes[1].set_title("Medianwerte")
+        axes[1].set_ylabel("Median")
+        
+        sns.barplot(x=stabw_values.index, y=stabw_values.values, ax=axes[2], palette="Reds")
+        axes[2].set_title("Standardabweichung")
+        axes[2].set_ylabel("Std Deviation")
+
+    # Grafikeinstellungen
+    if len(mean_values.index) > 2:
+        for ax in axes:
+            ax.set_xlabel("Gruppen")
+            ax.set_ylim(0, max(mean_values.max(), median_values.max(), stabw_values.max(skipna=True)) * 1.2)
+            ax.grid(axis='y', linestyle='--', alpha=0.6)
+
+    # Bild für Gruppenstatistik zeigen oder speichern
     if enabled2.get() == 1:
-        #plt.tight_layout()
         filename2 = f"Figure_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
         plt.savefig(filename2)
         plt.close()
     else:
-        #plt.tight_layout()
         plt.show()
+
 
 # add to PDF
 def addtopdf():
